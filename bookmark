@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# Author: Ibrahim Johar
+# Description: Bookmark
+
+readonly VERSION="0.4.1"
+readonly DIR=~/.local/share/bookmark
+readonly BOOKMARK=$DIR/bookmark
+# $DMENU - Defined in ~/.profile
+# $BROWSER - Defined in ~/.profile
+
+if [[ $1 = "-v" ]]; then
+    echo "Version: $VERSION"
+    exit
+elif [[ $1 = "-b" ]]; then
+    cat $BOOKMARK
+    exit
+fi
+
+main(){
+    check_dir
+    check_choice
+    open_bm
+}
+
+check_dir(){
+    if [[ ! -d $DIR ]]; then
+        mkdir -p $DIR
+    fi
+}
+
+prompt(){
+    $DMENU -i -p $1
+}
+
+options(){
+printf "Add\nDelete\n"
+bm
+}
+
+bm(){
+   cat $BOOKMARK | awk -F  " = "  '{print $1}'
+}
+
+choice(){
+options | prompt "Bookmark"
+}
+
+add(){
+    local url=$(prompt "Url")
+    [[ -z $url ]] && exit
+    local name=$(prompt "Name")
+
+    echo "$name = $url" >> $BOOKMARK
+}
+
+delete(){
+    local delete=$(bm | prompt "Delete")
+    [[ -z $delete ]] && exit
+    sed -i "/${delete} = /d" $BOOKMARK
+}
+
+selected_bm(){
+    url=$(grep -w "$1 " $BOOKMARK | awk -F " = " '{print $2}')
+    if [[ -z $url ]]; then
+        rofi -e "ERROR: There is not such \"$1\" bookmark"
+        exit 1
+    fi
+}
+
+check_choice(){
+    local choice=$(choice)
+
+    case $choice in
+        Add)
+            add
+            ;;
+        Delete)
+            delete
+            ;;
+        *)
+            [[ -z $choice ]] && exit
+            selected_bm "$choice"
+            ;;
+    esac
+}
+
+open_bm(){
+    $BROWSER $url
+}
+
+main
