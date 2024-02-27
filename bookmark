@@ -63,7 +63,8 @@ delete(){
 selected_bm(){
     url=$(grep -w "$1 " $BOOKMARK | awk -F " = " '{print $2}')
     if [[ -z $url ]]; then
-        rofi -e "ERROR: There is not such \"$1\" bookmark"
+        # Only works with rofi
+        $DMENU -e "ERROR: There is not such \"$1\" bookmark"
         exit 1
     fi
 }
