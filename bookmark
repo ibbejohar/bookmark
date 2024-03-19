@@ -30,7 +30,7 @@ check_dir(){
 }
 
 prompt(){
-    $DMENU -i -p $1
+    $DMENU -i -p $1 -l $2
 }
 
 options(){
@@ -43,7 +43,7 @@ bm(){
 }
 
 choice(){
-options | prompt "Bookmark"
+options | prompt "Bookmark" 10
 }
 
 add(){
@@ -63,8 +63,7 @@ delete(){
 selected_bm(){
     url=$(grep -w "$1 " $BOOKMARK | awk -F " = " '{print $2}')
     if [[ -z $url ]]; then
-        # Only works with rofi
-        $DMENU -e "ERROR: There is not such \"$1\" bookmark"
+        rofi -e "ERROR: There is not such \"$1\" bookmark"
         exit 1
     fi
 }
@@ -75,9 +74,11 @@ check_choice(){
     case $choice in
         Add)
             add
+            exit
             ;;
         Delete)
             delete
+            exit
             ;;
         *)
             [[ -z $choice ]] && exit
